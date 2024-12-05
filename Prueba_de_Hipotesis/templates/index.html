@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prueba de Hipótesis para una Media</title>
+    <link rel="stylesheet" href="static/styles.css">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Prueba de Hipótesis para una Media</h1>
+
+        <div class="form-container">
+            <form action="/test" method="POST">
+                <div class="input-group">
+                    <label for="varianza_conocida">¿Varianza conocida?</label>
+                    <select id="varianza_conocida" name="varianza_conocida">
+                        <option value="si">Sí</option>
+                        <option value="no">No</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="media_muestral">Media Muestral (x):</label>
+                    <input type="text" id="media_muestral" name="media_muestral" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="media_poblacional">Media Poblacional (μ):</label>
+                    <input type="text" id="media_poblacional" name="media_poblacional" required>
+                </div>
+
+                <div id="desviacion_poblacional_section" class="input-group">
+                    <label for="desviacion_estandar_poblacion">Des. Est. Poblacional (σ):</label>
+                    <input type="text" id="desviacion_estandar_poblacion" name="desviacion_estandar_poblacion">
+                </div>
+
+                <div id="desviacion_muestral_section" class="input-group" style="display:none;">
+                    <label for="desviacion_estandar_muestra">Des. Est. Muestral (S):</label>
+                    <input type="text" id="desviacion_estandar_muestra" name="desviacion_estandar_muestra">
+                </div>
+
+                <div class="input-group">
+                    <label for="tamano_muestra">Tamaño de Muestra (n):</label>
+                    <input type="text" id="tamano_muestra" name="tamano_muestra" required>
+                </div>
+
+                <div class="input-group">
+                    <label for="alpha">Nivel de Significancia (α):</label>
+                    <input type="text" id="alpha" name="alpha" value="0.05">
+                </div>
+
+                <div class="input-group" style="display: flex; align-items: center;">
+                    <label for="hipotesis_nula" style="margin-right: 10px;">Hipótesis Nula (H0):</label>
+                    <select id="hipotesis_nula" name="hipotesis_nula">
+                        <option value="igual">=</option>
+                        <option value="menor_igual">≤</option>
+                        <option value="mayor_igual">≥</option>
+                    </select>
+                </div>
+                
+                <div class="input-group" style="display: flex; align-items: center;">
+                    <label for="hipotesis_alternativa" style="margin-right: 10px;">Hipótesis Alternativa (H1):</label>
+                    <select id="hipotesis_alternativa" name="hipotesis_alternativa">
+                        <option value="menor"><</option>
+                        <option value="mayor">></option>
+                        <option value="diferente">≠</option>
+                    </select>
+                </div>
+
+                <input type="submit" value="Realizar Prueba">
+            </form>
+        </div>
+
+        <div id="resultados">
+            {% if varianza_conocida == 'si' and z is not none %}
+                <h3>Resultados de la prueba</h3>
+                <p><b>Valor Z:</b> {{ z }}</p>
+                <p><b>Punto Crítico:</b> {{ z_alpha }}</p>
+                <p><b>Resultado:</b> {{ resultado }}</p>
+            {% endif %}
+
+            {% if varianza_conocida == 'no' and t is not none %}
+                <h3>Resultados de la prueba</h3>
+                <p><b>Valor T:</b> {{ t }}</p>
+                <p><b>Punto Crítico:</b> {{ t_alpha }}</p>
+                <p><b>Resultado:</b> {{ resultado }}</p>
+            {% endif %}
+
+            {% if graph_json is not none %}
+                <h3>Gráfico de Regiones</h3>
+                <div id="graph"></div>
+
+                <script>
+                    var graphs = JSON.parse('{{ graph_json | safe }}');
+                    Plotly.newPlot('graph', graphs.data, graphs.layout);
+                </script>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('varianza_conocida').addEventListener('change', function() {
+            if (this.value === 'si') {
+                document.getElementById('desviacion_poblacional_section').style.display = 'block';
+                document.getElementById('desviacion_muestral_section').style.display = 'none';
+            } else {
+                document.getElementById('desviacion_poblacional_section').style.display = 'none';
+                document.getElementById('desviacion_muestral_section').style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>
